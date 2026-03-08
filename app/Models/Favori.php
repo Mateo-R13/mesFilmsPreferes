@@ -10,6 +10,7 @@ class Favori extends Model
         'user_id',
         'tmdb_id',
         'titre',
+        'synopsis',   // ✅ manquait : synopsis non sauvegardé en base
         'affiche',
         'annee',
         'note_tmdb',

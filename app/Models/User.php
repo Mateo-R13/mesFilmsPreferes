@@ -18,28 +18,42 @@ class User extends Authenticatable
         'password',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+        ];
+    }
 
     public function favoris()
     {
         return $this->hasMany(Favori::class);
     }
 
+    public function avis()
+    {
+        return $this->hasMany(Avis::class);
+    }
+
+    // Amis que j'ai ajoutés
     public function amis()
     {
-        return $this->hasMany(Ami::class);
+        return $this->hasMany(Ami::class, 'user_id');
     }
 
+    // Partages envoyés
     public function partagesEnvoyes()
     {
-        return $this->hasMany(Partage::class, 'user_id');
+        return $this->hasMany(Partage::class, 'expediteur_id');
     }
 
+    // Partages reçus
     public function partagesRecus()
     {
         return $this->hasMany(Partage::class, 'destinataire_id');

@@ -38,19 +38,22 @@ class PartagesController extends Controller
         $request->validate([
             'favori_id' => ['required', 'integer', 'exists:favoris,id'],
             'ami_id'    => ['required', 'integer', 'exists:users,id'],
+            'message'   => ['nullable', 'string', 'max:500'],
         ]);
 
+        // Vérifier que le favori appartient bien à l'utilisateur connecté
         $favori = Favori::where('id', $request->favori_id)
                         ->where('user_id', Auth::id())
                         ->firstOrFail();
 
+        // ✅ Correction : utiliser expediteur_id (et non user_id)
         Partage::create([
             'expediteur_id'   => Auth::id(),
             'destinataire_id' => $request->ami_id,
             'favori_id'       => $favori->id,
-            'message'         => $request->message ?? null,
+            'message'         => $request->message,
         ]);
 
-        return back()->with('success', '"' . $favori->titre . '" partagé avec succès !');
+        return back()->with('success', '« ' . $favori->titre . ' » partagé avec succès !');
     }
 }

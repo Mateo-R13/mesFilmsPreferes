@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Partage extends Model
 {
     protected $fillable = [
-        'user_id',
-        'favori_id',
+        'expediteur_id',   // ✅ corrigé : était 'user_id', ne matchait pas PartagesController
         'destinataire_id',
+        'favori_id',
+        'message',         // ✅ manquait dans fillable
     ];
 
     public function favori()
@@ -19,7 +20,7 @@ class Partage extends Model
 
     public function expediteur()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'expediteur_id');
     }
 
     public function destinataire()
