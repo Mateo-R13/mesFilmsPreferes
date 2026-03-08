@@ -19,7 +19,7 @@
             </div>
             <div>
                 <div class="small">Nom d'utilisateur</div>
-                <div style="font-weight:700">@{{ $user->username }}</div>
+                <div style="font-weight:700">{{ $user->username }}</div>
             </div>
             <div>
                 <div class="small">Email</div>

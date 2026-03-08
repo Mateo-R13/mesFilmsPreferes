@@ -11,10 +11,9 @@
                 <h1 style="margin:0;font-size:clamp(20px,3vw,30px);font-weight:900">
                     👤 {{ $user->firstname }} {{ $user->lastname }}
                 </h1>
-                <p class="small" style="margin:4px 0 0">@{{ $user->username }}</p>
+                <p class="small" style="margin:4px 0 0">{{ $user->username }}</p>
             </div>
         </div>
-        {{-- Bouton retirer ami --}}
         @if($estAmi)
             <form method="POST" action="{{ route('amis.remove', $user->id) }}">
                 @csrf
@@ -82,7 +81,6 @@
                             <p class="film-card__synopsis">{{ Str::limit($favori->synopsis, 90) }}</p>
                         @endif
 
-                        {{-- Avis de l'ami --}}
                         @if($favori->avis)
                             <div class="avis-bloc">
                                 <div class="avis-stars">
@@ -99,7 +97,6 @@
 
                         <div class="film-card__actions">
                             <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $favori->tmdb_id) }}">Détails</a>
-                            {{-- Ajouter à ses propres favoris --}}
                             <form method="POST" action="{{ route('films.addFavori') }}">
                                 @csrf
                                 <input type="hidden" name="tmdb_id" value="{{ $favori->tmdb_id }}">
