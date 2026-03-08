@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ami;
 use App\Models\Favori;
 use App\Models\Partage;
-use App\Models\Ami;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,13 +15,11 @@ class PartagesController extends Controller
     {
         $userId = Auth::id();
 
-        // Films reçus (je suis le ami_id)
         $recus = Partage::with(['favori', 'expediteur'])
             ->where('ami_id', $userId)
             ->latest()
             ->get();
 
-        // Films envoyés (je suis le user_id)
         $envoyes = Partage::with(['favori', 'destinataire'])
             ->where('user_id', $userId)
             ->latest()
@@ -43,17 +41,32 @@ class PartagesController extends Controller
             'message'   => ['nullable', 'string', 'max:500'],
         ]);
 
+        // 🔒 Vérifier que le favori appartient bien à l'utilisateur connecté
         $favori = Favori::where('id', $request->favori_id)
                         ->where('user_id', Auth::id())
                         ->firstOrFail();
 
+        // 🔒 Vérifier que le destinataire est bien un ami
+        $estAmi = Ami::where('user_id', Auth::id())
+                     ->where('friend_id', $request->ami_id)
+                     ->exists();
+
+        if (!$estAmi) {
+            abort(403, 'Tu ne peux partager qu\'avec tes amis.');
+        }
+
+        // 🔒 Ne pas se partager à soi-même
+        if ((int) $request->ami_id === Auth::id()) {
+            return back()->with('error', 'Tu ne peux pas te partager un film à toi-même.');
+        }
+
         Partage::create([
-            'user_id'  => Auth::id(),   // celui qui partage
-            'ami_id'   => $request->ami_id, // celui qui reçoit
+            'user_id'   => Auth::id(),
+            'ami_id'    => $request->ami_id,
             'favori_id' => $favori->id,
-            'message'   => $request->message,
+            'message'   => strip_tags($request->message ?? ''),
         ]);
 
-        return back()->with('success', '« ' . $favori->titre . ' » partagé avec succès !');
+        return back()->with('success', '« ' . e($favori->titre) . ' » partagé avec succès !');
     }
 }

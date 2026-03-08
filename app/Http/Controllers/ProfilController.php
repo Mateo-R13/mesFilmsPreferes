@@ -25,7 +25,7 @@ class ProfilController extends Controller
             'avis'         => $nbAvis,
             'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
             'amis'         => Ami::where('user_id', $user->id)->count(),
-            'partages'     => Partage::where('user_id', $user->id)->count(), // user_id = celui qui partage
+            'partages'     => Partage::where('user_id', $user->id)->count(),
         ];
 
         $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();
@@ -59,10 +59,7 @@ class ProfilController extends Controller
             'amis'         => Ami::where('user_id', $user->id)->count(),
         ];
 
-        $favoris = Favori::with('avis')
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
+        $favoris = Favori::with('avis')->where('user_id', $user->id)->latest()->get();
 
         return view('profil.ami', compact('user', 'stats', 'favoris', 'estAmi'));
     }
@@ -77,16 +74,16 @@ class ProfilController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'firstname' => ['required', 'string', 'max:100'],
-            'lastname'  => ['required', 'string', 'max:100'],
-            'username'  => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
-            'email'     => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'password'  => ['nullable', 'string', 'min:8', 'confirmed'],
+            'firstname' => ['required', 'string', 'max:100', 'regex:/^[\p{L}\s\-\']+$/u'],
+            'lastname'  => ['required', 'string', 'max:100', 'regex:/^[\p{L}\s\-\']+$/u'],
+            'username'  => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_\.\-]+$/', Rule::unique('users')->ignore($user->id)],
+            'email'     => ['required', 'email:rfc', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password'  => ['nullable', 'string', 'min:8', 'max:255', 'confirmed'],
         ]);
 
-        $user->firstname = $request->firstname;
-        $user->lastname  = $request->lastname;
-        $user->username  = $request->username;
+        $user->firstname = strip_tags($request->firstname);
+        $user->lastname  = strip_tags($request->lastname);
+        $user->username  = strip_tags($request->username);
         $user->email     = $request->email;
 
         if ($request->filled('password')) {
