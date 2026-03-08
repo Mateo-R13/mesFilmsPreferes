@@ -1,59 +1,88 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎬 Mes Films Préférés
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Application web Laravel permettant à des amis de partager leurs films préférés et de donner leur avis.
 
-## About Laravel
+![Laravel](https://img.shields.io/badge/Laravel-12.x-red) ![PHP](https://img.shields.io/badge/PHP-8.5-blue) ![SQLite](https://img.shields.io/badge/DB-SQLite%20%2F%20MySQL-green)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fonctionnalités
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- ✅ Inscription et connexion utilisateur
+- ✅ Recherche de films via l'API TMDB
+- ✅ Ajout de films en favoris
+- ✅ Ajout d'un avis (note 1-5 étoiles + commentaire) sur ses favoris
+- ✅ Gestion des amis (ajouter / retirer)
+- ✅ Partage individuel d'un favori à un ami
+- ✅ Consultation des films partagés avec moi
+- ✅ Profil utilisateur modifiable
+- ✅ Page détail d'un film (synopsis, casting, note TMDB)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Installation
 
-## Learning Laravel
+### Prérequis
+- PHP 8.2+
+- Composer
+- Node.js + npm
+- Une clé API TMDB gratuite ([themoviedb.org](https://www.themoviedb.org/settings/api))
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Étapes
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# 1. Cloner le repo
+git clone https://github.com/Mateo-R13/mesFilmsPreferes.git
+cd mesFilmsPreferes
 
-## Laravel Sponsors
+# 2. Installer les dépendances PHP
+composer install
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 3. Copier et configurer l'environnement
+cp .env.example .env
+php artisan key:generate
 
-### Premium Partners
+# 4. Configurer la base de données et la clé TMDB dans .env
+# DB_CONNECTION=sqlite  (ou mysql)
+# TMDB_API_KEY=ta_clé_ici
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# 5. Créer la base et lancer les migrations
+php artisan migrate
 
-## Contributing
+# 6. Installer les dépendances JS et compiler
+npm install
+npm run dev
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 7. Lancer le serveur
+php artisan serve
+```
 
-## Code of Conduct
+Ouvrir **http://localhost:8000** 🎉
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Stack technique
 
-## Security Vulnerabilities
+| Couche | Technologie |
+|---|---|
+| Backend | Laravel 12, PHP 8.5 |
+| Base de données | SQLite (dev) / MySQL (prod) |
+| Frontend | Blade, Vite, CSS custom |
+| API externe | TMDB (The Movie Database) |
+| Auth | Laravel Auth (classe Auth) |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Structure des modèles
 
-## License
+```
+User → hasMany Favori
+Favori → hasOne Avis
+Favori → hasMany Partage
+User → hasMany Ami
+Partage → belongsTo User (expéditeur)
+Partage → belongsTo User (destinataire)
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Obtenir une clé API TMDB
+
+1. Créer un compte sur [themoviedb.org](https://www.themoviedb.org/signup)
+2. Aller dans **Paramètres → API**
+3. Cliquer sur **"Créer"** → choisir **Developer** (gratuit)
+4. Copier la clé dans `.env` : `TMDB_API_KEY=ta_clé`
+
+## Auteur
+
+Projet réalisé dans le cadre d'un cours Laravel — ESN TopDev

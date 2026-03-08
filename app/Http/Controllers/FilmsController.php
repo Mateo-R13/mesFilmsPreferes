@@ -3,40 +3,43 @@
 namespace App\Http\Controllers;
 
 use App\Models\Favori;
+use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FilmsController extends Controller
 {
+    public function __construct(private TmdbService $tmdb) {}
+
     public function search(Request $request)
     {
         $results = null;
         $error   = null;
 
         if ($request->filled('query')) {
-            try {
-                $apiKey  = env('TMDB_API_KEY', '63905b28b94957ba2d061a85b849243f');
-                $query   = urlencode($request->input('query'));
-                $url     = "https://api.themoviedb.org/3/search/movie?query={$query}&api_key={$apiKey}&language=fr-FR";
-                $response = @file_get_contents($url);
+            $results = $this->tmdb->searchMovies($request->input('query'));
 
-                if ($response === false) {
-                    throw new \Exception('Impossible de contacter l\'API TMDB.');
-                }
-
-                $data = json_decode($response, true);
-
-                if (isset($data['results'])) {
-                    $results = $data['results'];
-                } else {
-                    $error = 'Aucun film trouvé.';
-                }
-            } catch (\Exception $e) {
-                $error = $e->getMessage();
+            if (empty($results)) {
+                $error = 'Aucun film trouvé pour cette recherche.';
             }
         }
 
         return view('films.rechercher', compact('results', 'error'));
+    }
+
+    public function show(int $tmdbId)
+    {
+        $film = $this->tmdb->getMovie($tmdbId);
+
+        if (!$film) {
+            abort(404, 'Film introuvable.');
+        }
+
+        $dejaEnFavori = Favori::where('user_id', Auth::id())
+                              ->where('tmdb_id', $tmdbId)
+                              ->exists();
+
+        return view('films.show', compact('film', 'dejaEnFavori'));
     }
 
     public function addFavori(Request $request)

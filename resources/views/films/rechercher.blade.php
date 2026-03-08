@@ -24,10 +24,7 @@
     <p class="small" style="margin-bottom:16px">{{ count($results) }} résultat(s) pour "{{ request('query') }}"</p>
     <div class="films-grid">
         @foreach($results as $film)
-            <div class="film-card {{ $film['poster_path'] ? '' : 'film-card--no-poster' }}"
-                 @if($film['poster_path'])
-                     style="background-image:none"
-                 @endif>
+            <div class="film-card {{ $film['poster_path'] ? '' : 'film-card--no-poster' }}">
 
                 @if($film['poster_path'])
                     <div class="film-card__poster"
@@ -45,6 +42,9 @@
                     </p>
 
                     <div class="film-card__actions">
+                        {{-- Lien vers la page détail --}}
+                        <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $film['id']) }}">Détails</a>
+
                         <form method="POST" action="{{ route('films.addFavori') }}">
                             @csrf
                             <input type="hidden" name="tmdb_id" value="{{ $film['id'] }}">
