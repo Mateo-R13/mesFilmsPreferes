@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Ami;
 use App\Models\Favori;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,7 +27,11 @@ class FavorisController extends Controller
 
         $favoris = $query->get();
 
-        return view('favoris.index', compact('favoris'));
+        // Liste des amis pour le bouton "Partager" sur chaque carte
+        $mesAmisIds = Ami::where('user_id', Auth::id())->pluck('friend_id');
+        $amis = User::whereIn('id', $mesAmisIds)->get();
+
+        return view('favoris.index', compact('favoris', 'amis'));
     }
 
     public function store()
