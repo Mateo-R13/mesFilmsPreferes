@@ -17,18 +17,15 @@ class ProfilController extends Controller
     {
         $user = Auth::user();
 
-        // ✅ Correction : Avis comptés via user_id directement (plus fiable)
-        $nbAvis = Avis::where('user_id', $user->id)->count();
-
-        // Note moyenne sur mes avis
+        $nbAvis      = Avis::where('user_id', $user->id)->count();
         $noteMoyenne = Avis::where('user_id', $user->id)->avg('note');
 
         $stats = [
-            'favoris'       => Favori::where('user_id', $user->id)->count(),
-            'avis'          => $nbAvis,
-            'note_moyenne'  => $noteMoyenne ? round($noteMoyenne, 1) : null,
-            'amis'          => Ami::where('user_id', $user->id)->count(),
-            'partages'      => Partage::where('expediteur_id', $user->id)->count(),
+            'favoris'      => Favori::where('user_id', $user->id)->count(),
+            'avis'         => $nbAvis,
+            'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
+            'amis'         => Ami::where('user_id', $user->id)->count(), // ✅ friend_id utilisé dans AmisController
+            'partages'     => Partage::where('expediteur_id', $user->id)->count(),
         ];
 
         $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();

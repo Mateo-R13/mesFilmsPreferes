@@ -13,11 +13,9 @@ class AmisController extends Controller
     {
         $userId = Auth::id();
 
-        // Mes amis (relation bidirectionnelle)
-        $mesAmisIds = Ami::where('user_id', $userId)->pluck('ami_id');
+        $mesAmisIds = Ami::where('user_id', $userId)->pluck('friend_id'); // ✅ friend_id
         $amis = User::whereIn('id', $mesAmisIds)->get();
 
-        // Recherche d'utilisateurs
         $usersRecherche = collect();
         if ($request->filled('search')) {
             $q = $request->input('search');
@@ -42,14 +40,20 @@ class AmisController extends Controller
             return back()->with('error', 'Tu ne peux pas t\'ajouter toi-même.');
         }
 
-        Ami::firstOrCreate(['user_id' => $userId, 'ami_id' => $user->id]);
+        Ami::firstOrCreate([
+            'user_id'   => $userId,
+            'friend_id' => $user->id, // ✅ friend_id
+        ]);
 
         return back()->with('success', $user->username . ' ajouté à tes amis !');
     }
 
     public function remove(User $user)
     {
-        Ami::where('user_id', Auth::id())->where('ami_id', $user->id)->delete();
+        Ami::where('user_id', Auth::id())
+           ->where('friend_id', $user->id) // ✅ friend_id
+           ->delete();
+
         return back()->with('success', $user->username . ' retiré de tes amis.');
     }
 }

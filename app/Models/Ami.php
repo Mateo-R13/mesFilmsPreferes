@@ -10,7 +10,7 @@ class Ami extends Model
 
     protected $fillable = [
         'user_id',
-        'ami_id',
+        'friend_id', // ✅ vrai nom de colonne dans la migration
     ];
 
     public function user()
@@ -20,6 +20,6 @@ class Ami extends Model
 
     public function ami()
     {
-        return $this->belongsTo(User::class, 'ami_id');
+        return $this->belongsTo(User::class, 'friend_id');
     }
 }

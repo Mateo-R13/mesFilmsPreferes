@@ -27,7 +27,7 @@ class PartagesController extends Controller
 
         $favoris = Favori::where('user_id', $userId)->get();
 
-        $mesAmisIds = Ami::where('user_id', $userId)->pluck('ami_id');
+        $mesAmisIds = Ami::where('user_id', $userId)->pluck('friend_id'); // ✅ friend_id
         $amis = User::whereIn('id', $mesAmisIds)->get();
 
         return view('partages.index', compact('recus', 'envoyes', 'favoris', 'amis'));
@@ -41,12 +41,10 @@ class PartagesController extends Controller
             'message'   => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Vérifier que le favori appartient bien à l'utilisateur connecté
         $favori = Favori::where('id', $request->favori_id)
                         ->where('user_id', Auth::id())
                         ->firstOrFail();
 
-        // ✅ Correction : utiliser expediteur_id (et non user_id)
         Partage::create([
             'expediteur_id'   => Auth::id(),
             'destinataire_id' => $request->ami_id,
