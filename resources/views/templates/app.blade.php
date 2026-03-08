@@ -3,32 +3,35 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ isset($title) ? $title.' • Mes Films Préférés' : 'Mes Films Préférés' }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <title>@yield('title', 'Mes Films Préférés') • Mes Films Préférés</title>
+    @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
-<body class="min-h-screen">
-
-    {{-- Rideau cinéma à l'ouverture --}}
+<body>
     <div class="curtain" aria-hidden="true"></div>
 
     @include('templates.menu')
 
-    <main class="max-w-6xl mx-auto px-6 py-8">
-
+    <main class="container">
         @if (session('success'))
             <div class="alert alert--ok" role="status">{{ session('success') }}</div>
+            <div style="height:12px"></div>
         @endif
 
         @if ($errors->any())
             <div class="alert alert--err" role="alert">
-                <strong>Oups !</strong> Merci de corriger les champs indiqués.
+                <strong>Oups.</strong> Merci de corriger les champs en erreur.
+                <ul style="margin:8px 0 0; padding-left:18px">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
+            <div style="height:12px"></div>
         @endif
 
         @yield('content')
 
-        <div class="footer">Mes Films Préférés &bull; Laravel &bull; TMDB</div>
+        <footer class="footer small">Projet Laravel • TMDB • Mes Films Préférés</footer>
     </main>
-
 </body>
 </html>
