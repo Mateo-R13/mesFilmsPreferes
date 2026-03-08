@@ -1,78 +1,63 @@
 <?php
 
-/**
- * Created by Reliese Model.
- */
-
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-/**
- * Class User
- * 
- * @property int $id
- * @property string $firstname
- * @property string $lastname
- * @property string $username
- * @property string $email
- * @property string|null $avatar
- * @property Carbon|null $email_verified_at
- * @property string $password
- * @property string|null $remember_token
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * 
- * @property Collection|Avi[] $avis
- * @property Collection|Favori[] $favoris
- * @property Collection|FriendUser[] $friend_users
- * @property Collection|Partage[] $partages
- *
- * @package App\Models
- */
-class User extends Model
+class User extends Authenticatable
 {
-	protected $table = 'users';
+    use HasFactory, Notifiable;
 
-	protected $casts = [
-		'email_verified_at' => 'datetime'
-	];
+    protected $fillable = [
+        'firstname',
+        'lastname',
+        'username',
+        'email',
+        'password',
+    ];
 
-	protected $hidden = [
-		'password',
-		'remember_token'
-	];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-	protected $fillable = [
-		'firstname',
-		'lastname',
-		'username',
-		'email',
-		'avatar',
-		'email_verified_at',
-		'password',
-		'remember_token'
-	];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
-	public function avis()
-	{
-		return $this->hasMany(Avi::class);
-	}
+    public function favoris()
+    {
+        return $this->hasMany(Favori::class);
+    }
 
-	public function favoris()
-	{
-		return $this->hasMany(Favori::class);
-	}
+    public function avis()
+    {
+        return $this->hasMany(Avis::class);
+    }
 
-	public function friend_users()
-	{
-		return $this->hasMany(FriendUser::class);
-	}
+    public function amis()
+    {
+        return $this->hasMany(Ami::class);
+    }
 
-	public function partages()
-	{
-		return $this->hasMany(Partage::class);
-	}
+    public function partagesEnvoyes()
+    {
+        return $this->hasMany(Partage::class, 'user_id');
+    }
+
+    public function partagesRecus()
+    {
+        return $this->hasMany(Partage::class, 'ami_id');
+    }
+
+    public function estAmi(int $userId): bool
+    {
+        return $this->amis()->where('friend_id', $userId)->exists();
+    }
 }
