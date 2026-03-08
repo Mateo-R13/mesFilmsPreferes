@@ -9,17 +9,18 @@ class FavorisController extends Controller
 {
     public function index()
     {
-        $favoris = Favori::where('user_id', Auth::id())
-                         ->with('avis')
-                         ->latest()
-                         ->get();
+        $favoris = Favori::with('avis')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get();
 
         return view('favoris.index', compact('favoris'));
     }
 
     public function store()
     {
-        // handled by FilmsController::addFavori
+        // Géré dans FilmsController::addFavori
+        return redirect()->route('favoris');
     }
 
     public function destroy(Favori $favori)
@@ -30,6 +31,6 @@ class FavorisController extends Controller
 
         $favori->delete();
 
-        return back()->with('success', 'Film retiré de tes favoris.');
+        return back()->with('success', '"' . $favori->titre . '" retiré de tes favoris.');
     }
 }

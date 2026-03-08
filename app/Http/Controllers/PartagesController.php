@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ami;
 use App\Models\Favori;
 use App\Models\Partage;
+use App\Models\Ami;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,42 +15,42 @@ class PartagesController extends Controller
     {
         $userId = Auth::id();
 
-        $favoris  = Favori::where('user_id', $userId)->get();
-        $amisIds  = Ami::where('user_id', $userId)->pluck('ami_id');
-        $mesAmis  = \App\Models\User::whereIn('id', $amisIds)->get();
+        $recus = Partage::with(['favori', 'expediteur'])
+            ->where('destinataire_id', $userId)
+            ->latest()
+            ->get();
 
-        $partagesEnvoyes = Partage::where('user_id', $userId)
-                                  ->with(['favori', 'destinataire'])
-                                  ->latest()
-                                  ->get();
+        $envoyes = Partage::with(['favori', 'destinataire'])
+            ->where('expediteur_id', $userId)
+            ->latest()
+            ->get();
 
-        $partagesRecus = Partage::where('destinataire_id', $userId)
-                                ->with(['favori', 'expediteur'])
-                                ->latest()
-                                ->get();
+        $favoris = Favori::where('user_id', $userId)->get();
 
-        return view('partages.index', compact('favoris', 'mesAmis', 'partagesEnvoyes', 'partagesRecus'));
+        $mesAmisIds = Ami::where('user_id', $userId)->pluck('ami_id');
+        $amis = User::whereIn('id', $mesAmisIds)->get();
+
+        return view('partages.index', compact('recus', 'envoyes', 'favoris', 'amis'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'favori_id' => ['required', 'exists:favoris,id'],
-            'ami_id'    => ['required', 'exists:users,id'],
+            'favori_id' => ['required', 'integer', 'exists:favoris,id'],
+            'ami_id'    => ['required', 'integer', 'exists:users,id'],
         ]);
 
-        $favori = Favori::findOrFail($request->favori_id);
+        $favori = Favori::where('id', $request->favori_id)
+                        ->where('user_id', Auth::id())
+                        ->firstOrFail();
 
-        if ($favori->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        Partage::firstOrCreate([
-            'user_id'         => Auth::id(),
-            'favori_id'       => $request->favori_id,
+        Partage::create([
+            'expediteur_id'   => Auth::id(),
             'destinataire_id' => $request->ami_id,
+            'favori_id'       => $favori->id,
+            'message'         => $request->message ?? null,
         ]);
 
-        return back()->with('success', 'Film partagé avec succès !');
+        return back()->with('success', '"' . $favori->titre . '" partagé avec succès !');
     }
 }

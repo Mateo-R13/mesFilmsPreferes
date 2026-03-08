@@ -2,22 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ami;
 use App\Models\User;
+use App\Models\Ami;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AmisController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $userId = Auth::id();
 
+        // Mes amis (relation bidirectionnelle)
         $mesAmisIds = Ami::where('user_id', $userId)->pluck('ami_id');
-        $mesAmis    = User::whereIn('id', $mesAmisIds)->get();
+        $amis = User::whereIn('id', $mesAmisIds)->get();
 
-        $autresUtilisateurs = User::where('id', '!=', $userId)->get();
+        // Recherche d'utilisateurs
+        $usersRecherche = collect();
+        if ($request->filled('search')) {
+            $q = $request->input('search');
+            $usersRecherche = User::where('id', '!=', $userId)
+                ->where(function ($query) use ($q) {
+                    $query->where('username', 'like', "%{$q}%")
+                          ->orWhere('email', 'like', "%{$q}%")
+                          ->orWhere('firstname', 'like', "%{$q}%")
+                          ->orWhere('lastname', 'like', "%{$q}%");
+                })
+                ->get();
+        }
 
-        return view('amis.index', compact('mesAmis', 'autresUtilisateurs'));
+        return view('amis.index', compact('amis', 'usersRecherche', 'mesAmisIds'));
     }
 
     public function add(User $user)
@@ -25,27 +39,17 @@ class AmisController extends Controller
         $userId = Auth::id();
 
         if ($user->id === $userId) {
-            return back()->with('success', 'Tu ne peux pas t\'ajouter toi-même.');
+            return back()->with('error', 'Tu ne peux pas t\'ajouter toi-même.');
         }
 
-        $existe = Ami::where('user_id', $userId)
-                     ->where('ami_id', $user->id)
-                     ->exists();
+        Ami::firstOrCreate(['user_id' => $userId, 'ami_id' => $user->id]);
 
-        if (!$existe) {
-            Ami::create(['user_id' => $userId, 'ami_id' => $user->id]);
-            return back()->with('success', $user->username . ' ajouté à tes amis !');
-        }
-
-        return back()->with('success', 'Cet utilisateur est déjà ton ami.');
+        return back()->with('success', $user->username . ' ajouté à tes amis !');
     }
 
     public function remove(User $user)
     {
-        Ami::where('user_id', Auth::id())
-           ->where('ami_id', $user->id)
-           ->delete();
-
+        Ami::where('user_id', Auth::id())->where('ami_id', $user->id)->delete();
         return back()->with('success', $user->username . ' retiré de tes amis.');
     }
 }

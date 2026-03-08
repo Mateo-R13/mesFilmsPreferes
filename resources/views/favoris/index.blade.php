@@ -1,7 +1,5 @@
 @extends('templates.app')
-
 @section('title', 'Mes favoris')
-
 @section('content')
 <div class="section-header">
     <h1 class="section-title">⭐ Mes favoris</h1>
@@ -10,64 +8,78 @@
 
 @if($favoris->isEmpty())
     <div class="empty">
-        Tu n'as pas encore de film en favori.<br>
-        <a href="{{ route('films.search') }}" style="color:var(--gold)">Rechercher un film</a>
+        <div style="font-size:48px;margin-bottom:12px">🎬</div>
+        <p>Tu n'as pas encore de favoris.</p>
+        <a class="btn btn--primary" href="{{ route('films.search') }}">Rechercher un film</a>
     </div>
 @else
     <div class="films-grid">
         @foreach($favoris as $favori)
-            <div class="film-card {{ $favori->affiche ? '' : 'film-card--no-poster' }}">
-
+            <div class="film-card">
                 @if($favori->affiche)
-                    <div class="film-card__poster"
-                         style="background-image:url('https://image.tmdb.org/t/p/w500{{ $favori->affiche }}')"
-                         aria-hidden="true"></div>
+                    <div class="film-card__poster" style="background-image:url('https://image.tmdb.org/t/p/w500{{ $favori->affiche }}')"></div>
                 @endif
-
                 <div class="film-card__body">
                     <h3 class="film-card__title">{{ $favori->titre }}</h3>
                     <p class="film-card__meta">
-                        {{ $favori->annee ?? '' }}
+                        {{ $favori->annee ?? '—' }}
                         @if($favori->note_tmdb)
-                            &nbsp;• ⭐ {{ number_format($favori->note_tmdb,1) }}/10
+                            &nbsp;• ⭐ {{ $favori->note_tmdb }}/10
                         @endif
                     </p>
 
-                    {{-- Avis --}}
-                    <div style="background:rgba(0,0,0,.4); border-radius:12px; padding:12px; margin:4px 0">
-                        @if($favori->avis)
-                            <div class="stars" style="margin-bottom:6px">
+                    {{-- Avis existant --}}
+                    @if($favori->avis)
+                        <div class="avis-bloc">
+                            <div class="avis-stars">
                                 @for($i=1;$i<=5;$i++)
-                                    <span class="star {{ $i <= $favori->avis->note ? 'active' : '' }}">★</span>
+                                    <span class="{{ $i <= $favori->avis->note ? 'star--on' : 'star--off' }}">★</span>
                                 @endfor
                             </div>
                             @if($favori->avis->commentaire)
-                                <p class="small" style="margin:0">"{{ $favori->avis->commentaire }}"</p>
+                                <p class="avis-comment">{{ $favori->avis->commentaire }}</p>
                             @endif
-                            <form method="POST" action="{{ route('avis.destroy', $favori->avis->id) }}" style="margin-top:8px">
+                            <div style="display:flex;gap:8px;margin-top:8px">
+                                <button class="btn btn--sm" onclick="toggleForm('edit-{{ $favori->id }}')" type="button">✏️ Modifier</button>
+                                <form method="POST" action="{{ route('avis.destroy', $favori->avis->id) }}">
+                                    @csrf
+                                    <button class="btn btn--danger btn--sm" type="submit">🗑</button>
+                                </form>
+                            </div>
+                            <div id="edit-{{ $favori->id }}" style="display:none;margin-top:10px">
+                                <form method="POST" action="{{ route('avis.update', $favori->avis->id) }}">
+                                    @csrf
+                                    <select class="input" name="note" required style="margin-bottom:8px">
+                                        @for($i=1;$i<=5;$i++)
+                                            <option value="{{ $i }}" {{ $favori->avis->note == $i ? 'selected' : '' }}>{{ $i }} ★</option>
+                                        @endfor
+                                    </select>
+                                    <textarea class="input" name="commentaire" rows="2" placeholder="Commentaire...">{{ $favori->avis->commentaire }}</textarea>
+                                    <button class="btn btn--primary btn--sm" type="submit" style="margin-top:6px">Enregistrer</button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <button class="btn btn--sm" onclick="toggleForm('avis-{{ $favori->id }}')" type="button">+ Donner un avis</button>
+                        <div id="avis-{{ $favori->id }}" style="display:none;margin-top:10px">
+                            <form method="POST" action="{{ route('avis.add', $favori->id) }}">
                                 @csrf
-                                <button class="btn btn--ghost btn--sm" style="color:var(--muted)" type="submit">Supprimer l'avis</button>
-                            </form>
-                        @else
-                            <form method="POST" action="{{ route('avis.add', $favori->id) }}" class="form">
-                                @csrf
-                                <div class="stars" id="stars-{{ $favori->id }}" style="margin-bottom:8px">
+                                <select class="input" name="note" required style="margin-bottom:8px">
                                     @for($i=1;$i<=5;$i++)
-                                        <span class="star" data-val="{{ $i }}" onclick="setNote({{ $favori->id }},{{ $i }})">★</span>
+                                        <option value="{{ $i }}">{{ $i }} ★</option>
                                     @endfor
-                                </div>
-                                <input type="hidden" name="note" id="note-{{ $favori->id }}" value="0">
-                                <textarea class="textarea" name="commentaire" placeholder="Ton avis (optionnel)..." style="min-height:70px"></textarea>
-                                <button class="btn btn--gold btn--sm" type="submit">Enregistrer l'avis</button>
+                                </select>
+                                <textarea class="input" name="commentaire" rows="2" placeholder="Commentaire (optionnel)..."></textarea>
+                                <button class="btn btn--primary btn--sm" type="submit" style="margin-top:6px">Enregistrer</button>
                             </form>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
 
-                    <div class="film-card__actions">
+                    <div class="film-card__actions" style="margin-top:10px">
+                        <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $favori->tmdb_id) }}">Détails</a>
                         <form method="POST" action="{{ route('favoris.destroy', $favori->id) }}">
                             @csrf
-                            <button class="btn btn--danger btn--sm" type="submit"
-                                    onclick="return confirm('Retirer ce film des favoris ?')">Retirer</button>
+                            <button class="btn btn--danger btn--sm" type="submit">Retirer</button>
                         </form>
                     </div>
                 </div>
@@ -77,11 +89,9 @@
 @endif
 
 <script>
-function setNote(id,val){
-  document.getElementById('note-'+id).value=val;
-  document.querySelectorAll('#stars-'+id+' .star').forEach((s,i)=>{
-    s.classList.toggle('active', i<val);
-  });
+function toggleForm(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 @endsection

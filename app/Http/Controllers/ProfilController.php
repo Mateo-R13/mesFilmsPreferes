@@ -8,44 +8,43 @@ use App\Models\Favori;
 use App\Models\Partage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class ProfilController extends Controller
 {
     public function show()
     {
-        $userId = Auth::id();
+        $user = Auth::user();
 
         $stats = [
-            'nb_favoris'  => Favori::where('user_id', $userId)->count(),
-            'nb_avis'     => Avis::where('user_id', $userId)->count(),
-            'nb_amis'     => Ami::where('user_id', $userId)->count(),
-            'nb_partages' => Partage::where('user_id', $userId)->count(),
+            'favoris'  => Favori::where('user_id', $user->id)->count(),
+            'avis'     => Avis::whereHas('favori', fn($q) => $q->where('user_id', $user->id))->count(),
+            'amis'     => Ami::where('user_id', $user->id)->count(),
+            'partages' => Partage::where('expediteur_id', $user->id)->count(),
         ];
 
-        return view('profil.show', compact('stats'));
+        $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();
+
+        return view('profil.show', compact('user', 'stats', 'derniersFavoris'));
     }
 
     public function edit()
     {
-        return view('profil.edit');
+        return view('profil.edit', ['user' => Auth::user()]);
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
 
-        $rules = [
-            'firstname' => ['required', 'string', 'max:255'],
-            'lastname'  => ['required', 'string', 'max:255'],
-            'username'  => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id],
-            'email'     => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-        ];
-
-        if ($request->filled('password')) {
-            $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
-        }
-
-        $request->validate($rules);
+        $request->validate([
+            'firstname' => ['required', 'string', 'max:100'],
+            'lastname'  => ['required', 'string', 'max:100'],
+            'username'  => ['required', 'string', 'max:50', Rule::unique('users')->ignore($user->id)],
+            'email'     => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'password'  => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
 
         $user->firstname = $request->firstname;
         $user->lastname  = $request->lastname;
@@ -53,11 +52,11 @@ class ProfilController extends Controller
         $user->email     = $request->email;
 
         if ($request->filled('password')) {
-            $user->password = bcrypt($request->password);
+            $user->password = Hash::make($request->password);
         }
 
         $user->save();
 
-        return redirect(route('profil'))->with('success', 'Profil mis à jour avec succès !');
+        return redirect()->route('profil')->with('success', 'Profil mis à jour !');
     }
 }
