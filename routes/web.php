@@ -27,6 +27,13 @@ Route::middleware('auth')->group(function () {
     // Déconnexion
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+    // Films (recherche + détail TMDB)
+    Route::controller(FilmsController::class)->group(function () {
+        Route::get('/films/rechercher', 'search')->name('films.search');
+        Route::get('/films/{tmdbId}', 'show')->name('films.show');
+        Route::post('/films/ajouter-favori', 'addFavori')->name('films.addFavori');
+    });
+
     // Favoris
     Route::controller(FavorisController::class)->group(function () {
         Route::get('/favoris', 'index')->name('favoris');
@@ -39,12 +46,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/avis/{favori}', 'store')->name('avis.add');
         Route::post('/avis/{avis}/update', 'update')->name('avis.update');
         Route::post('/avis/{avis}/delete', 'destroy')->name('avis.destroy');
-    });
-
-    // Films (recherche TMDB)
-    Route::controller(FilmsController::class)->group(function () {
-        Route::get('/films/rechercher', 'search')->name('films.search');
-        Route::post('/films/ajouter-favori', 'addFavori')->name('films.addFavori');
     });
 
     // Amis
