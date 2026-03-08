@@ -1,49 +1,50 @@
 @extends('templates.app')
 
-@section('title', 'Accueil - Mes Films Préférés')
+@section('title', 'Accueil')
 
 @section('content')
-<div class="dashboard-section">
-    <h1>Bienvenue {{ $user->firstname }} ! 👋</h1>
+<section class="hero">
+    <div class="hero__grid">
+        <div class="card">
+            <h1 class="h1">Partage tes films<br>préférés avec tes amis</h1>
+            <p class="lead">Recherche des films via TMDB, ajoute-les à tes favoris, donne ton avis, puis partage-les individuellement à tes amis.</p>
 
-    <!-- Cartes de statistiques -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">❤️</div>
-            <div class="stat-content">
-                <h3>Mes Favoris</h3>
-                <p class="stat-number">{{ $nbFavoris }}</p>
-                <a href="{{ route('favoris') }}" class="stat-link">Voir mes favoris →</a>
+            @guest
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px">
+                    <a class="btn btn--primary" href="{{ route('register') }}">Créer un compte</a>
+                    <a class="btn" href="{{ route('login') }}">Se connecter</a>
+                </div>
+            @endguest
+
+            @auth
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px">
+                    <a class="btn btn--primary" href="{{ route('films.search') }}">🎬 Rechercher un film</a>
+                    <a class="btn" href="{{ route('favoris') }}">⭐ Mes favoris</a>
+                </div>
+            @endauth
+
+            <div class="badges">
+                <span class="badge">Laravel</span>
+                <span class="badge">MySQL</span>
+                <span class="badge">API TMDB</span>
+                <span class="badge">Favoris & avis</span>
+                <span class="badge">Amis & partages</span>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-content">
-                <h3>Mes Amis</h3>
-                <p class="stat-number">{{ $nbAmis }}</p>
-                <a href="{{ route('amis') }}" class="stat-link">Gérer mes amis →</a>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon">🎁</div>
-            <div class="stat-content">
-                <h3>Partages reçus</h3>
-                <p class="stat-number">{{ $nbPartages }}</p>
-                <a href="{{ route('partages') }}" class="stat-link">Voir les partages →</a>
+        <div class="card card--flat">
+            <p class="small" style="margin:0 0 14px; font-weight:600; color:var(--gold)">Fonctionnalités du site</p>
+            <div class="small" style="display:grid; gap:10px">
+                <div>🔐 Créer un compte et se connecter</div>
+                <div>🔍 Rechercher des films (API TMDB)</div>
+                <div>⭐ Ajouter un film à ses favoris</div>
+                <div>✍️ Donner un avis sur ses favoris</div>
+                <div>👥 Voir les autres utilisateurs</div>
+                <div>🤝 Ajouter ou retirer des amis</div>
+                <div>📤 Partager un favori à un ami</div>
+                <div>📥 Voir les films partagés avec moi</div>
             </div>
         </div>
     </div>
-
-    <!-- Actions rapides -->
-    <section class="quick-actions">
-        <h2>Actions rapides</h2>
-        <div class="action-buttons">
-            <a href="{{ route('films.search') }}" class="btn btn-primary btn-large">🔍 Rechercher un film</a>
-            <a href="{{ route('profil.edit') }}" class="btn btn-secondary btn-large">✏️ Éditer mon profil</a>
-            <a href="{{ route('amis') }}" class="btn btn-secondary btn-large">➕ Ajouter des amis</a>
-        </div>
-    </section>
-</div>
+</section>
 @endsection
