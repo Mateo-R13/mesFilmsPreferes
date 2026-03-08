@@ -15,19 +15,21 @@ class PartagesController extends Controller
     {
         $userId = Auth::id();
 
+        // Films reçus (je suis le ami_id)
         $recus = Partage::with(['favori', 'expediteur'])
-            ->where('destinataire_id', $userId)
+            ->where('ami_id', $userId)
             ->latest()
             ->get();
 
+        // Films envoyés (je suis le user_id)
         $envoyes = Partage::with(['favori', 'destinataire'])
-            ->where('expediteur_id', $userId)
+            ->where('user_id', $userId)
             ->latest()
             ->get();
 
         $favoris = Favori::where('user_id', $userId)->get();
 
-        $mesAmisIds = Ami::where('user_id', $userId)->pluck('friend_id'); // ✅ friend_id
+        $mesAmisIds = Ami::where('user_id', $userId)->pluck('friend_id');
         $amis = User::whereIn('id', $mesAmisIds)->get();
 
         return view('partages.index', compact('recus', 'envoyes', 'favoris', 'amis'));
@@ -46,10 +48,10 @@ class PartagesController extends Controller
                         ->firstOrFail();
 
         Partage::create([
-            'expediteur_id'   => Auth::id(),
-            'destinataire_id' => $request->ami_id,
-            'favori_id'       => $favori->id,
-            'message'         => $request->message,
+            'user_id'  => Auth::id(),   // celui qui partage
+            'ami_id'   => $request->ami_id, // celui qui reçoit
+            'favori_id' => $favori->id,
+            'message'   => $request->message,
         ]);
 
         return back()->with('success', '« ' . $favori->titre . ' » partagé avec succès !');

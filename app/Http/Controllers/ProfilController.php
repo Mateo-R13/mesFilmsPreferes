@@ -25,7 +25,7 @@ class ProfilController extends Controller
             'avis'         => $nbAvis,
             'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
             'amis'         => Ami::where('user_id', $user->id)->count(),
-            'partages'     => Partage::where('expediteur_id', $user->id)->count(),
+            'partages'     => Partage::where('user_id', $user->id)->count(), // user_id = celui qui partage
         ];
 
         $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();
@@ -37,7 +37,6 @@ class ProfilController extends Controller
     {
         $moi = Auth::id();
 
-        // Sécurité : on ne peut voir que le profil de ses amis (ou le sien)
         $estAmi = Ami::where('user_id', $moi)
                      ->where('friend_id', $user->id)
                      ->exists();
@@ -46,7 +45,6 @@ class ProfilController extends Controller
             abort(403, 'Tu ne peux voir que le profil de tes amis.');
         }
 
-        // Si c'est soi-même, rediriger vers le vrai profil
         if ($user->id === $moi) {
             return redirect()->route('profil');
         }
@@ -66,7 +64,6 @@ class ProfilController extends Controller
             ->latest()
             ->get();
 
-        // Est-ce qu'il est aussi mon ami ? (déjà calculé)
         return view('profil.ami', compact('user', 'stats', 'favoris', 'estAmi'));
     }
 

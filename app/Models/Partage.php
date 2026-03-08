@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Partage extends Model
 {
     protected $fillable = [
-        'expediteur_id',   // ✅ corrigé : était 'user_id', ne matchait pas PartagesController
-        'destinataire_id',
+        'user_id',    // celui qui partage (migration)
+        'ami_id',     // celui qui reçoit (migration)
         'favori_id',
-        'message',         // ✅ manquait dans fillable
+        'message',
     ];
 
     public function favori()
@@ -18,13 +18,15 @@ class Partage extends Model
         return $this->belongsTo(Favori::class);
     }
 
+    // Celui qui a partagé
     public function expediteur()
     {
-        return $this->belongsTo(User::class, 'expediteur_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
+    // Celui qui reçoit
     public function destinataire()
     {
-        return $this->belongsTo(User::class, 'destinataire_id');
+        return $this->belongsTo(User::class, 'ami_id');
     }
 }

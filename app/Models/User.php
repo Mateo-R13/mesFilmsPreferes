@@ -11,16 +11,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'firstname',
-        'lastname',
-        'username',
-        'email',
-        'password',
+        'firstname', 'lastname', 'username', 'email', 'password',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected function casts(): array
@@ -41,21 +36,20 @@ class User extends Authenticatable
         return $this->hasMany(Avis::class);
     }
 
-    // Amis que j'ai ajoutés
     public function amis()
     {
         return $this->hasMany(Ami::class, 'user_id');
     }
 
-    // Partages envoyés
+    // Partages envoyés (user_id = celui qui partage)
     public function partagesEnvoyes()
     {
-        return $this->hasMany(Partage::class, 'expediteur_id');
+        return $this->hasMany(Partage::class, 'user_id');
     }
 
-    // Partages reçus
+    // Partages reçus (ami_id = celui qui reçoit)
     public function partagesRecus()
     {
-        return $this->hasMany(Partage::class, 'destinataire_id');
+        return $this->hasMany(Partage::class, 'ami_id');
     }
 }
