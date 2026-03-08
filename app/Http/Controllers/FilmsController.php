@@ -17,10 +17,14 @@ class FilmsController extends Controller
         $error   = null;
 
         if ($request->filled('query')) {
-            $results = $this->tmdb->searchMovies($request->input('query'));
+            $data = $this->tmdb->searchMovies($request->input('query'));
 
-            if (empty($results)) {
-                $error = 'Aucun film trouvé pour cette recherche.';
+            if (isset($data[0]['_error']) && $data[0]['_error'] === 'clé_manquante') {
+                $error = 'Clé API TMDB manquante. Ajoute TMDB_API_KEY dans ton fichier .env !';
+            } elseif (empty($data)) {
+                $error = 'Aucun film trouvé pour cette recherche, ou l\'API TMDB est inaccessible.';
+            } else {
+                $results = $data;
             }
         }
 
@@ -62,7 +66,6 @@ class FilmsController extends Controller
                 'annee'     => $request->annee ?? null,
                 'note_tmdb' => $request->note_tmdb ?? null,
             ]);
-
             return back()->with('success', '« ' . $request->titre . ' » ajouté à tes favoris !');
         }
 
