@@ -19,9 +19,7 @@ class FilmsController extends Controller
         if ($request->filled('query')) {
             $data = $this->tmdb->searchMovies($request->input('query'));
 
-            if (isset($data[0]['_error']) && $data[0]['_error'] === 'clé_manquante') {
-                $error = 'Clé API TMDB manquante. Ajoute TMDB_API_KEY dans ton fichier .env !';
-            } elseif (empty($data)) {
+            if (empty($data)) {
                 $error = 'Aucun film trouvé pour cette recherche, ou l\'API TMDB est inaccessible.';
             } else {
                 $results = $data;
@@ -62,6 +60,7 @@ class FilmsController extends Controller
                 'user_id'   => Auth::id(),
                 'tmdb_id'   => $request->tmdb_id,
                 'titre'     => $request->titre,
+                'synopsis'  => $request->synopsis ?? null,
                 'affiche'   => $request->affiche ?? null,
                 'annee'     => $request->annee ?? null,
                 'note_tmdb' => $request->note_tmdb ?? null,

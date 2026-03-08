@@ -1,7 +1,5 @@
 @extends('templates.app')
-
 @section('title', 'Rechercher un film')
-
 @section('content')
 <div class="section-header">
     <h1 class="section-title">🔍 Rechercher un film</h1>
@@ -24,14 +22,12 @@
     <p class="small" style="margin-bottom:16px">{{ count($results) }} résultat(s) pour "{{ request('query') }}"</p>
     <div class="films-grid">
         @foreach($results as $film)
-            <div class="film-card {{ $film['poster_path'] ? '' : 'film-card--no-poster' }}">
-
+            <div class="film-card">
                 @if($film['poster_path'])
                     <div class="film-card__poster"
                          style="background-image:url('https://image.tmdb.org/t/p/w500{{ $film['poster_path'] }}')"
                          aria-hidden="true"></div>
                 @endif
-
                 <div class="film-card__body">
                     <h3 class="film-card__title">{{ $film['title'] }}</h3>
                     <p class="film-card__meta">
@@ -41,15 +37,19 @@
                         @endif
                     </p>
 
-                    <div class="film-card__actions">
-                        {{-- Lien vers la page détail --}}
-                        <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $film['id']) }}">Détails</a>
+                    {{-- Synopsis court --}}
+                    @if(!empty($film['overview']))
+                        <p class="film-card__synopsis">{{ Str::limit($film['overview'], 100) }}</p>
+                    @endif
 
+                    <div class="film-card__actions">
+                        <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $film['id']) }}">Détails</a>
                         <form method="POST" action="{{ route('films.addFavori') }}">
                             @csrf
                             <input type="hidden" name="tmdb_id" value="{{ $film['id'] }}">
                             <input type="hidden" name="titre" value="{{ $film['title'] }}">
                             <input type="hidden" name="affiche" value="{{ $film['poster_path'] ?? '' }}">
+                            <input type="hidden" name="synopsis" value="{{ $film['overview'] ?? '' }}">
                             <input type="hidden" name="annee" value="{{ isset($film['release_date']) ? substr($film['release_date'],0,4) : '' }}">
                             <input type="hidden" name="note_tmdb" value="{{ $film['vote_average'] ?? 0 }}">
                             <button class="btn btn--gold btn--sm" type="submit">+ Favoris</button>

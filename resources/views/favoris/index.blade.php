@@ -28,6 +28,11 @@
                         @endif
                     </p>
 
+                    {{-- Synopsis court --}}
+                    @if($favori->synopsis)
+                        <p class="film-card__synopsis">{{ Str::limit($favori->synopsis, 100) }}</p>
+                    @endif
+
                     {{-- Avis existant --}}
                     @if($favori->avis)
                         <div class="avis-bloc">
