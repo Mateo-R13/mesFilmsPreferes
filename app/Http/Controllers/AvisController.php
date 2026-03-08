@@ -21,6 +21,7 @@ class AvisController extends Controller
         Avis::updateOrCreate(
             ['favori_id' => $favori->id],
             [
+                'user_id'     => Auth::id(),
                 'note'        => $request->note,
                 'commentaire' => $request->commentaire,
             ]
