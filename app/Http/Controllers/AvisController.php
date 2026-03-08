@@ -39,7 +39,9 @@ class AvisController extends Controller
             'commentaire' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        // ✅ user_id inclus pour éviter toute erreur si la colonne est NOT NULL
         $avis->update([
+            'user_id'     => Auth::id(),
             'note'        => $request->note,
             'commentaire' => $request->commentaire,
         ]);
@@ -49,7 +51,8 @@ class AvisController extends Controller
 
     public function destroy(Avis $avis)
     {
-        if ($avis->favori->user_id !== Auth::id()) abort(403);
+        // ✅ Vérification : l'avis appartient à l'utilisateur connecté
+        if ($avis->user_id !== Auth::id()) abort(403);
         $avis->delete();
         return back()->with('success', 'Avis supprimé.');
     }

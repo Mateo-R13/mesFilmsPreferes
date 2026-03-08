@@ -65,9 +65,11 @@ class FilmsController extends Controller
                 'annee'     => $request->annee ?? null,
                 'note_tmdb' => $request->note_tmdb ?? null,
             ]);
-            return back()->with('success', '« ' . $request->titre . ' » ajouté à tes favoris !');
+
+            // ✅ Redirection vers les favoris après ajout (au lieu de back() qui peut boucler)
+            return redirect()->route('favoris')->with('success', '« ' . $request->titre . ' » ajouté à tes favoris !');
         }
 
-        return back()->with('success', 'Ce film est déjà dans tes favoris.');
+        return redirect()->route('favoris')->with('success', 'Ce film est déjà dans tes favoris.');
     }
 }

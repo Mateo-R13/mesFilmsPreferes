@@ -14,20 +14,24 @@
             <div class="empty">Personne ne t'a encore partagé de film.</div>
         @else
             @foreach($recus as $partage)
+                {{-- ✅ null safety sur favori et expediteur --}}
+                @if(!$partage->favori) @continue @endif
                 <div class="card" style="margin-bottom:12px;display:flex;gap:14px;align-items:center">
-                    @if($partage->favori && $partage->favori->affiche)
-                        <img src="https://image.tmdb.org/t/p/w92{{ $partage->favori->affiche }}" style="width:50px;border-radius:8px" alt="">
+                    @if($partage->favori->affiche)
+                        <img src="https://image.tmdb.org/t/p/w92{{ $partage->favori->affiche }}"
+                             style="width:50px;border-radius:8px" alt="">
                     @endif
                     <div style="flex:1">
-                        <div style="font-weight:700">{{ $partage->favori->titre ?? '—' }}</div>
-                        <div class="small">Partagé par <strong>{{ $partage->expediteur->username ?? '—' }}</strong></div>
+                        <div style="font-weight:700">{{ $partage->favori->titre }}</div>
+                        <div class="small">
+                            Partagé par <strong>{{ $partage->expediteur->username ?? 'Utilisateur supprimé' }}</strong>
+                            <span style="opacity:.5">• {{ $partage->created_at->diffForHumans() }}</span>
+                        </div>
                         @if($partage->message)
                             <div class="small" style="margin-top:4px;font-style:italic">"{{ $partage->message }}"</div>
                         @endif
                     </div>
-                    @if($partage->favori)
-                        <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $partage->favori->tmdb_id) }}">Voir</a>
-                    @endif
+                    <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $partage->favori->tmdb_id) }}">Voir</a>
                 </div>
             @endforeach
         @endif
@@ -48,7 +52,7 @@
                     <select class="input" name="favori_id" required style="margin-bottom:12px">
                         <option value="">-- Choisir un film --</option>
                         @foreach($favoris as $favori)
-                            <option value="{{ $favori->id }}">{{ $favori->titre }} ({{ $favori->annee }})</option>
+                            <option value="{{ $favori->id }}">{{ $favori->titre }} ({{ $favori->annee ?? '?' }})</option>
                         @endforeach
                     </select>
                     <label class="label">Ami destinataire</label>
@@ -59,8 +63,11 @@
                         @endforeach
                     </select>
                     <label class="label">Message (optionnel)</label>
-                    <textarea class="input" name="message" rows="2" placeholder="Je pense que ce film va te plaire !"></textarea>
-                    <button class="btn btn--primary" type="submit" style="margin-top:12px;width:100%">Partager 🚀</button>
+                    <textarea class="input" name="message" rows="2"
+                              placeholder="Je pense que ce film va te plaire !"></textarea>
+                    <button class="btn btn--primary" type="submit" style="margin-top:12px;width:100%">
+                        Partager 🚀
+                    </button>
                 </form>
             </div>
         @endif
@@ -69,10 +76,18 @@
         @if($envoyes->isNotEmpty())
             <h2 style="font-size:16px;margin:20px 0 12px">Envoyés ({{ $envoyes->count() }})</h2>
             @foreach($envoyes as $partage)
+                {{-- ✅ null safety sur favori et destinataire --}}
+                @if(!$partage->favori) @continue @endif
                 <div class="card" style="margin-bottom:10px;display:flex;gap:12px;align-items:center">
                     <div style="flex:1">
-                        <div style="font-weight:700;font-size:14px">{{ $partage->favori->titre ?? '—' }}</div>
-                        <div class="small">→ <strong>{{ $partage->destinataire->username ?? '—' }}</strong></div>
+                        <div style="font-weight:700;font-size:14px">{{ $partage->favori->titre }}</div>
+                        <div class="small">
+                            → <strong>{{ $partage->destinataire->username ?? 'Utilisateur supprimé' }}</strong>
+                            <span style="opacity:.5">• {{ $partage->created_at->diffForHumans() }}</span>
+                        </div>
+                        @if($partage->message)
+                            <div class="small" style="font-style:italic">"{{ $partage->message }}"</div>
+                        @endif
                     </div>
                 </div>
             @endforeach
