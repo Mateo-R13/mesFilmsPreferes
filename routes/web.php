@@ -66,5 +66,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/profil', 'show')->name('profil');
         Route::get('/profil/edit', 'edit')->name('profil.edit');
         Route::post('/profil/update', 'update')->name('profil.update');
+        Route::get('/profil/{user}', 'showAmi')->name('profil.ami'); // 👥 Profil public d'un ami
     });
 });

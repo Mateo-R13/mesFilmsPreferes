@@ -6,6 +6,7 @@ use App\Models\Ami;
 use App\Models\Avis;
 use App\Models\Favori;
 use App\Models\Partage;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +16,40 @@ class ProfilController extends Controller
 {
     public function show()
     {
-        $user = Auth::user();
+        $user        = Auth::user();
+        $nbAvis      = Avis::where('user_id', $user->id)->count();
+        $noteMoyenne = Avis::where('user_id', $user->id)->avg('note');
+
+        $stats = [
+            'favoris'      => Favori::where('user_id', $user->id)->count(),
+            'avis'         => $nbAvis,
+            'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
+            'amis'         => Ami::where('user_id', $user->id)->count(),
+            'partages'     => Partage::where('expediteur_id', $user->id)->count(),
+        ];
+
+        $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();
+
+        return view('profil.show', compact('user', 'stats', 'derniersFavoris'));
+    }
+
+    public function showAmi(User $user)
+    {
+        $moi = Auth::id();
+
+        // Sécurité : on ne peut voir que le profil de ses amis (ou le sien)
+        $estAmi = Ami::where('user_id', $moi)
+                     ->where('friend_id', $user->id)
+                     ->exists();
+
+        if (!$estAmi && $user->id !== $moi) {
+            abort(403, 'Tu ne peux voir que le profil de tes amis.');
+        }
+
+        // Si c'est soi-même, rediriger vers le vrai profil
+        if ($user->id === $moi) {
+            return redirect()->route('profil');
+        }
 
         $nbAvis      = Avis::where('user_id', $user->id)->count();
         $noteMoyenne = Avis::where('user_id', $user->id)->avg('note');
@@ -24,13 +58,16 @@ class ProfilController extends Controller
             'favoris'      => Favori::where('user_id', $user->id)->count(),
             'avis'         => $nbAvis,
             'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
-            'amis'         => Ami::where('user_id', $user->id)->count(), // ✅ friend_id utilisé dans AmisController
-            'partages'     => Partage::where('expediteur_id', $user->id)->count(),
+            'amis'         => Ami::where('user_id', $user->id)->count(),
         ];
 
-        $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();
+        $favoris = Favori::with('avis')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
 
-        return view('profil.show', compact('user', 'stats', 'derniersFavoris'));
+        // Est-ce qu'il est aussi mon ami ? (déjà calculé)
+        return view('profil.ami', compact('user', 'stats', 'favoris', 'estAmi'));
     }
 
     public function edit()
