@@ -13,6 +13,15 @@
         <a class="btn btn--primary" href="{{ route('films.search') }}">Rechercher un film</a>
     </div>
 @else
+    {{-- Barre de tri --}}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <span class="small">Trier par :</span>
+        <a class="btn btn--sm {{ request('tri','recent') === 'recent' ? 'btn--primary' : '' }}" href="?tri=recent">Plus récents</a>
+        <a class="btn btn--sm {{ request('tri') === 'note' ? 'btn--primary' : '' }}" href="?tri=note">Meilleure note TMDB</a>
+        <a class="btn btn--sm {{ request('tri') === 'titre' ? 'btn--primary' : '' }}" href="?tri=titre">Titre A→Z</a>
+        <span class="small" style="margin-left:auto">{{ $favoris->count() }} film(s)</span>
+    </div>
+
     <div class="films-grid">
         @foreach($favoris as $favori)
             <div class="film-card">
@@ -28,12 +37,10 @@
                         @endif
                     </p>
 
-                    {{-- Synopsis court --}}
                     @if($favori->synopsis)
                         <p class="film-card__synopsis">{{ Str::limit($favori->synopsis, 100) }}</p>
                     @endif
 
-                    {{-- Avis existant --}}
                     @if($favori->avis)
                         <div class="avis-bloc">
                             <div class="avis-stars">
@@ -94,7 +101,7 @@
 @endif
 
 <script>
-function toggleForm(id) {
+function toggleForm(id){
     const el = document.getElementById(id);
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
