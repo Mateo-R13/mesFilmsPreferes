@@ -41,6 +41,7 @@
                         <p class="film-card__synopsis">{{ Str::limit($favori->synopsis, 100) }}</p>
                     @endif
 
+                    {{-- Avis --}}
                     @if($favori->avis)
                         <div class="avis-bloc">
                             <div class="avis-stars">
@@ -87,13 +88,46 @@
                         </div>
                     @endif
 
+                    {{-- Actions --}}
                     <div class="film-card__actions" style="margin-top:10px">
                         <a class="btn btn--ghost btn--sm" href="{{ route('films.show', $favori->tmdb_id) }}">Détails</a>
+
+                        {{-- Bouton Partager --}}
+                        @if($amis->isNotEmpty())
+                            <button class="btn btn--sm" style="color:var(--gold);border-color:rgba(246,196,83,.3)"
+                                    onclick="toggleForm('partager-{{ $favori->id }}')" type="button">
+                                📤 Partager
+                            </button>
+                        @endif
+
                         <form method="POST" action="{{ route('favoris.destroy', $favori->id) }}">
                             @csrf
                             <button class="btn btn--danger btn--sm" type="submit">Retirer</button>
                         </form>
                     </div>
+
+                    {{-- Popover partage --}}
+                    @if($amis->isNotEmpty())
+                        <div id="partager-{{ $favori->id }}" style="display:none;margin-top:10px">
+                            <form method="POST" action="{{ route('partages.add') }}">
+                                @csrf
+                                <input type="hidden" name="favori_id" value="{{ $favori->id }}">
+                                <select class="input" name="ami_id" required style="margin-bottom:8px">
+                                    <option value="">-- Choisir un ami --</option>
+                                    @foreach($amis as $ami)
+                                        <option value="{{ $ami->id }}">{{ $ami->username }} ({{ $ami->firstname }})</option>
+                                    @endforeach
+                                </select>
+                                <textarea class="input" name="message" rows="2"
+                                          placeholder="Message (optionnel)..."
+                                          style="margin-bottom:8px"></textarea>
+                                <button class="btn btn--primary btn--sm" type="submit" style="width:100%">
+                                    Envoyer 🚀
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
                 </div>
             </div>
         @endforeach
