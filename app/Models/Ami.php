@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Ami extends Model
 {
-    use HasFactory;
-
     protected $table = 'amis';
 
     protected $fillable = [
         'user_id',
-        'friend_id',
+        'ami_id',
     ];
 
     public function user()
@@ -23,6 +20,6 @@ class Ami extends Model
 
     public function ami()
     {
-        return $this->belongsTo(User::class, 'friend_id');
+        return $this->belongsTo(User::class, 'ami_id');
     }
 }

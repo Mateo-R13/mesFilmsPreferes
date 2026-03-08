@@ -2,95 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Favori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class FilmsController extends Controller
 {
-    /**
-     * Clé API TMDB
-     * 
-     * @var string
-     */
-    private $apiKey = '63905b28b94957ba2d061a85b849243f';
-    private $baseUrl = 'https://api.themoviedb.org/3';
-
-    /**
-     * Affiche la page de recherche de films
-     * 
-     * @param Request $request
-     * @return \Illuminate\View\View
-     */
     public function search(Request $request)
     {
         $results = null;
-        $error = null;
-        $query = null;
+        $error   = null;
 
-        // Si une recherche est effectuée
-        if ($request->has('query') && !empty($request->input('query'))) {
-            $query = $request->input('query');
-
+        if ($request->filled('query')) {
             try {
-                // Encoder la requête pour l'URL
-                $encodedQuery = urlencode($query);
-
-                // Former l'URL d'appel à l'API TMDB
-                $url = "{$this->baseUrl}/search/movie?query={$encodedQuery}&api_key={$this->apiKey}&language=fr&page=1";
-
-                // Récupérer les données
+                $apiKey  = env('TMDB_API_KEY', '63905b28b94957ba2d061a85b849243f');
+                $query   = urlencode($request->input('query'));
+                $url     = "https://api.themoviedb.org/3/search/movie?query={$query}&api_key={$apiKey}&language=fr-FR";
                 $response = @file_get_contents($url);
 
                 if ($response === false) {
-                    throw new \Exception('Erreur lors de la requête à l\'API TMDB.');
+                    throw new \Exception('Impossible de contacter l\'API TMDB.');
                 }
 
-                // Décoder la réponse JSON
                 $data = json_decode($response, true);
 
-                // Vérifier qu'il y a des résultats
-                if (isset($data['results']) && count($data['results']) > 0) {
+                if (isset($data['results'])) {
                     $results = $data['results'];
                 } else {
-                    $error = 'Aucun film trouvé pour "' . htmlspecialchars($query) . '".';
+                    $error = 'Aucun film trouvé.';
                 }
-
             } catch (\Exception $e) {
-                $error = 'Erreur : ' . $e->getMessage();
+                $error = $e->getMessage();
             }
         }
 
-        return view('films.search', [
-            'results' => $results,
-            'error' => $error,
-            'query' => $query,
-        ]);
+        return view('films.rechercher', compact('results', 'error'));
     }
 
-    /**
-     * Ajoute un film aux favoris depuis les résultats de recherche
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function addFavori(Request $request)
     {
-        // Vérifier l'authentification
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Veuillez vous connecter pour ajouter des favoris.');
-        }
-
-        // Validation
-        $validated = $request->validate([
-            'favori_id' => 'required',
-            'film_title' => 'required|string|max:255',
-            'film_year' => 'nullable|string',
-            'film_overview' => 'nullable|string',
-            'film_poster_path' => 'nullable|string',
+        $request->validate([
+            'tmdb_id' => ['required', 'integer'],
+            'titre'   => ['required', 'string', 'max:255'],
         ]);
 
-        // Réorienter vers le stockage du favori
-        return redirect()->route('favoris.add')
-            ->with('data', $validated);
+        $existe = Favori::where('user_id', Auth::id())
+                        ->where('tmdb_id', $request->tmdb_id)
+                        ->exists();
+
+        if (!$existe) {
+            Favori::create([
+                'user_id'   => Auth::id(),
+                'tmdb_id'   => $request->tmdb_id,
+                'titre'     => $request->titre,
+                'affiche'   => $request->affiche ?? null,
+                'annee'     => $request->annee ?? null,
+                'note_tmdb' => $request->note_tmdb ?? null,
+            ]);
+
+            return back()->with('success', '« ' . $request->titre . ' » ajouté à tes favoris !');
+        }
+
+        return back()->with('success', 'Ce film est déjà dans tes favoris.');
     }
 }

@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Partage extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'favori_id',
         'user_id',
-        'ami_id',
+        'favori_id',
+        'destinataire_id',
     ];
 
     public function favori()
@@ -27,6 +24,6 @@ class Partage extends Model
 
     public function destinataire()
     {
-        return $this->belongsTo(User::class, 'ami_id');
+        return $this->belongsTo(User::class, 'destinataire_id');
     }
 }
