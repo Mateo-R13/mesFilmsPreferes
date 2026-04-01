@@ -60,8 +60,8 @@
 @php
 $nbFavoris  = \App\Models\Favori::where('user_id', Auth::id())->count();
 $nbAmis     = \App\Models\Ami::where('user_id', Auth::id())->count();
-$nbPartages = \App\Models\Partage::where('expediteur_id', Auth::id())->count();
-$nbRecus    = \App\Models\Partage::where('destinataire_id', Auth::id())->count();
+$nbPartages = \App\Models\Partage::where('user_id', Auth::id())->count();
+$nbRecus    = \App\Models\Partage::where('ami_id', Auth::id())->count();
 @endphp
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px">
     <a href="{{ route('favoris') }}" class="stat-card">
