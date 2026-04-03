@@ -11,7 +11,7 @@ class AvisController extends Controller
 {
     public function store(Request $request, Favori $favori)
     {
-        if ($favori->user_id !== Auth::id()) abort(403);
+        if ($favori->user_id != Auth::id()) abort(403);
 
         $request->validate([
             'note'        => ['required', 'integer', 'min:1', 'max:5'],
@@ -32,14 +32,13 @@ class AvisController extends Controller
 
     public function update(Request $request, Avis $avis)
     {
-        if ($avis->favori->user_id !== Auth::id()) abort(403);
+        if ($avis->favori->user_id != Auth::id()) abort(403);
 
         $request->validate([
             'note'        => ['required', 'integer', 'min:1', 'max:5'],
             'commentaire' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        // ✅ user_id inclus pour éviter toute erreur si la colonne est NOT NULL
         $avis->update([
             'user_id'     => Auth::id(),
             'note'        => $request->note,
@@ -51,8 +50,7 @@ class AvisController extends Controller
 
     public function destroy(Avis $avis)
     {
-        // ✅ Vérification : l'avis appartient à l'utilisateur connecté
-        if ($avis->user_id !== Auth::id()) abort(403);
+        if ($avis->user_id != Auth::id()) abort(403);
         $avis->delete();
         return back()->with('success', 'Avis supprimé.');
     }
