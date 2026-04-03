@@ -94,4 +94,25 @@ class ProfilController extends Controller
 
         return redirect()->route('profil')->with('success', 'Profil mis à jour !');
     }
+
+    public function destroy(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['password' => 'Mot de passe incorrect.']);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $user->delete();
+
+        return redirect('/')->with('success', 'Ton compte a été supprimé.');
+    }
 }
