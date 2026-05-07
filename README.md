@@ -14,11 +14,11 @@ Ce projet répond à un cahier des charges BTS SIO : développer une application
 
 | Couche | Technologie |
 |---|---|
-| Framework back-end | Laravel 11 (PHP 8.2+) |
-| Base de données | SQLite (dev) / MySQL (prod) |
+| Framework back-end | Laravel 12 (PHP 8.2+) |
+| Base de données | MySQL |
 | Moteur de templates | Blade |
 | Build front-end | Vite.js |
-| CSS | Vanilla CSS (thème cinéma custom) |
+| CSS | CSS vanilla custom (thème cinéma) |
 | API externe | TMDB v3 (The Movie Database) |
 | Authentification | Laravel Auth (sessions) |
 | Sécurité | Rate limiting, headers HTTP, CSRF, XSS |
@@ -54,7 +54,7 @@ mesFilmsPreferes/
 ├── database/migrations/           # Migrations Laravel
 ├── resources/
 │   ├── views/                     # Vues Blade
-│   └── css/app.css                # Styles globaux (thème cinéma)
+│   └── css/app.css                # Styles globaux (thème cinéma custom)
 └── routes/web.php                 # Toutes les routes de l'application
 ```
 
@@ -95,6 +95,7 @@ updated_at      message
 - PHP 8.2+
 - Composer
 - Node.js 18+
+- MySQL
 - Une clé API TMDB (gratuite sur [themoviedb.org](https://www.themoviedb.org/settings/api))
 
 ### Étapes
@@ -114,8 +115,11 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 5. Renseigner la clé TMDB dans .env
+# 5. Renseigner la clé TMDB et les infos MySQL dans .env
 # TMDB_API_KEY=ta_cle_ici
+# DB_DATABASE=mesfilmspreferes
+# DB_USERNAME=root
+# DB_PASSWORD=
 
 # 6. Créer la base de données et jouer les migrations
 php artisan migrate
@@ -130,6 +134,8 @@ php artisan serve
 ```
 
 L'application est accessible sur **http://localhost:8000**.
+
+> **Raccourci** : tu peux aussi utiliser `composer run setup` puis `composer run dev` pour tout faire en une commande, ou le script `setup.sh`.
 
 ---
 
