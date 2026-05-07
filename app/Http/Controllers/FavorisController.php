@@ -27,7 +27,6 @@ class FavorisController extends Controller
 
         $favoris = $query->get();
 
-        // Liste des amis pour le bouton "Partager" sur chaque carte
         $mesAmisIds = Ami::where('user_id', Auth::id())->pluck('friend_id');
         $amis = User::whereIn('id', $mesAmisIds)->get();
 
@@ -39,11 +38,18 @@ class FavorisController extends Controller
         return redirect()->route('favoris');
     }
 
-    public function destroy(Favori $favori)
+    public function destroy($id)
     {
-        // Cast explicite en int pour éviter le faux 403 (string vs int)
-        if ((int) $favori->user_id !== (int) Auth::id()) abort(403);
+        // On scope directement sur user_id : si le favori n'appartient pas
+        // à l'utilisateur connecté, findOrFail retourne 404 proprement
+        // sans risque de comparaison de types (string vs int avec SQLite)
+        $favori = Favori::where('id', $id)
+                        ->where('user_id', Auth::id())
+                        ->firstOrFail();
+
+        $titre = $favori->titre;
         $favori->delete();
-        return back()->with('success', '"' . $favori->titre . '" retiré de tes favoris.');
+
+        return back()->with('success', '"' . $titre . '" retiré de tes favoris.');
     }
 }
