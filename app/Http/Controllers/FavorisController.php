@@ -41,7 +41,8 @@ class FavorisController extends Controller
 
     public function destroy(Favori $favori)
     {
-        if ($favori->user_id !== Auth::id()) abort(403);
+        // Cast explicite en int pour éviter le faux 403 (string vs int)
+        if ((int) $favori->user_id !== (int) Auth::id()) abort(403);
         $favori->delete();
         return back()->with('success', '"' . $favori->titre . '" retiré de tes favoris.');
     }
