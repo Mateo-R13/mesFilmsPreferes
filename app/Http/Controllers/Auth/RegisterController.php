@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ami;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -24,7 +24,7 @@ class RegisterController extends Controller
             'firstname' => ['required', 'string', 'max:100', 'regex:/^[\p{L}\s\-\']+$/u'],
             'lastname'  => ['required', 'string', 'max:100', 'regex:/^[\p{L}\s\-\']+$/u'],
             'username'  => ['required', 'string', 'max:50', 'regex:/^[a-zA-Z0-9_\.\-]+$/', 'unique:users'],
-            'email'     => ['required', 'string', 'email:rfc,dns', 'max:255', 'unique:users'],
+            'email'     => ['required', 'string', 'email:rfc', 'max:255', 'unique:users'],
             'password'  => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
         ]);
 
@@ -46,17 +46,20 @@ class RegisterController extends Controller
             ->with('user')
             ->first();
 
-        if ($invitation) {
-            // Marquer l'invitation comme acceptée
-            $invitation->update(['accepte' => true]);
-
+        if ($invitation && $invitation->user) {
             $inviteur = $invitation->user;
+            $now      = now();
 
-            // Créer l'amitié dans les deux sens (si elle n'existe pas déjà)
-            if ($inviteur && $inviteur->id !== $user->id) {
-                Ami::firstOrCreate(['user_id' => $inviteur->id, 'friend_id' => $user->id]);
-                Ami::firstOrCreate(['user_id' => $user->id,     'friend_id' => $inviteur->id]);
-            }
+            DB::transaction(function () use ($invitation, $inviteur, $user, $now) {
+                // Marquer l'invitation comme acceptée
+                $invitation->update(['accepte' => true]);
+
+                // Créer l'amitié dans les deux sens (ignoré si déjà existant)
+                DB::table('amis')->insertOrIgnore([
+                    ['user_id' => $inviteur->id, 'friend_id' => $user->id, 'created_at' => $now, 'updated_at' => $now],
+                    ['user_id' => $user->id,     'friend_id' => $inviteur->id, 'created_at' => $now, 'updated_at' => $now],
+                ]);
+            });
 
             $flash['invited_by']      = $inviteur->firstname . ' ' . $inviteur->lastname;
             $flash['invited_message'] = $invitation->message ?? null;
