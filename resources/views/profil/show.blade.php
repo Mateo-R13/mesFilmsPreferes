@@ -33,7 +33,7 @@
     </div>
 
     {{-- Statistiques --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat({{ $stats['note_moyenne'] ? '5' : '4' }},1fr);gap:12px;margin-bottom:20px">
         <a href="{{ route('favoris') }}" class="stat-card">
             <div class="stat-card__num" style="color:var(--gold)">{{ $stats['favoris'] }}</div>
             <div class="stat-card__label">Favoris</div>
@@ -61,15 +61,6 @@
             <div class="stat-card__num" style="color:#a78bfa">{{ $stats['partages'] }}</div>
             <div class="stat-card__label">Partages</div>
         </a>
-        <a href="{{ route('invitations') }}" class="stat-card">
-            <div class="stat-card__num" style="color:#38bdf8">{{ $stats['invitations'] }}</div>
-            <div class="stat-card__label">Invitations</div>
-        </a>
-    </div>
-
-    {{-- Lien vers les invitations --}}
-    <div style="margin-bottom:20px">
-        <a href="{{ route('invitations') }}" class="btn btn--primary">✉️ Inviter des amis à rejoindre l'application</a>
     </div>
 
     {{-- Derniers favoris --}}

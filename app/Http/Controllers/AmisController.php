@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Ami;
+use App\Models\Invitation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,9 @@ class AmisController extends Controller
                 ->get();
         }
 
-        return view('amis.index', compact('amis', 'usersRecherche', 'mesAmisIds'));
+        $invitations = Invitation::where('user_id', $userId)->latest()->get();
+
+        return view('amis.index', compact('amis', 'usersRecherche', 'mesAmisIds', 'invitations'));
     }
 
     public function add(User $user)
@@ -42,16 +45,8 @@ class AmisController extends Controller
         }
 
         DB::transaction(function () use ($userId, $user) {
-            // Lien A -> B
-            Ami::firstOrCreate([
-                'user_id'   => $userId,
-                'friend_id' => $user->id,
-            ]);
-            // Lien réciproque B -> A
-            Ami::firstOrCreate([
-                'user_id'   => $user->id,
-                'friend_id' => $userId,
-            ]);
+            Ami::firstOrCreate(['user_id' => $userId, 'friend_id' => $user->id]);
+            Ami::firstOrCreate(['user_id' => $user->id, 'friend_id' => $userId]);
         });
 
         return back()->with('success', $user->username . ' ajouté à tes amis !');
@@ -62,14 +57,8 @@ class AmisController extends Controller
         $userId = Auth::id();
 
         DB::transaction(function () use ($userId, $user) {
-            // Suppression A -> B
-            Ami::where('user_id', $userId)
-               ->where('friend_id', $user->id)
-               ->delete();
-            // Suppression réciproque B -> A
-            Ami::where('user_id', $user->id)
-               ->where('friend_id', $userId)
-               ->delete();
+            Ami::where('user_id', $userId)->where('friend_id', $user->id)->delete();
+            Ami::where('user_id', $user->id)->where('friend_id', $userId)->delete();
         });
 
         return back()->with('success', $user->username . ' retiré de tes amis.');
