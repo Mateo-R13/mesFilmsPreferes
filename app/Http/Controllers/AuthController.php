@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,18 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('accueil')->with('show_curtain', true);
+        $flash = ['show_curtain' => true];
+        $invitation = Invitation::where('email', $user->email)
+                                ->where('accepte', false)
+                                ->with('user')
+                                ->first();
+
+        if ($invitation) {
+            $invitation->update(['accepte' => true]);
+            $flash['invited_by'] = $invitation->user->firstname . ' ' . $invitation->user->lastname;
+        }
+
+        return redirect()->route('accueil')->with($flash);
     }
 
     public function showLogin()
@@ -51,7 +63,21 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->route('accueil')->with('show_curtain', true);
+
+            $flash = ['show_curtain' => true];
+            $user = Auth::user();
+
+            $invitation = Invitation::where('email', $user->email)
+                                    ->where('accepte', false)
+                                    ->with('user')
+                                    ->first();
+
+            if ($invitation) {
+                $invitation->update(['accepte' => true]);
+                $flash['invited_by'] = $invitation->user->firstname . ' ' . $invitation->user->lastname;
+            }
+
+            return redirect()->route('accueil')->with($flash);
         }
 
         return back()->withErrors(['email' => 'Identifiants incorrects.'])->onlyInput('email');

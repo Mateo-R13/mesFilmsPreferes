@@ -1,6 +1,32 @@
 @extends('templates.app')
 @section('title', 'Accueil')
 @section('content')
+
+{{-- Bannière de bienvenue pour un utilisateur invité --}}
+@if(session('invited_by'))
+<div style="
+    background: linear-gradient(135deg, rgba(229,9,20,.15), rgba(246,196,83,.10));
+    border: 1px solid rgba(246,196,83,.35);
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+">
+    <div style="font-size: 40px; flex-shrink:0">🎞️</div>
+    <div>
+        <div style="font-size:18px; font-weight:800; margin-bottom:4px">
+            Bienvenue sur MesFilmsPréférés, {{ Auth::user()->firstname }} ! 🍿
+        </div>
+        <div style="color:var(--muted); font-size:14px">
+            Vous avez été invité(e) par <strong style="color:var(--gold)">{{ session('invited_by') }}</strong>.
+            Explorez l'application et ajoutez vos premiers films favoris !
+        </div>
+    </div>
+</div>
+@endif
+
 <section class="hero">
     <div class="hero__grid">
         <div class="card">
@@ -15,17 +41,17 @@
             @endguest
             @auth
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-                    <a class="btn btn--primary" href="{{ route('films.search') }}">🔍 Rechercher un film</a>
-                    <a class="btn" href="{{ route('favoris') }}">⭐ Mes favoris</a>
+                    <a class="btn btn--primary" href="{{ route('films.search') }}">&#x1F50D; Rechercher un film</a>
+                    <a class="btn" href="{{ route('favoris') }}">&#x2B50; Mes favoris</a>
                 </div>
             @endauth
 
             <div class="badges" style="margin-top:18px">
-                <span class="badge">🎬 Laravel</span>
+                <span class="badge">🎦 Laravel</span>
                 <span class="badge">🗄️ SQLite / MySQL</span>
                 <span class="badge">🎥 API TMDB</span>
-                <span class="badge">⭐ Avis & notes</span>
-                <span class="badge">👥 Amis & partages</span>
+                <span class="badge">⭐ Avis &amp; notes</span>
+                <span class="badge">👥 Amis &amp; partages</span>
             </div>
         </div>
 
@@ -34,20 +60,21 @@
             <div style="display:grid;gap:10px">
                 @php
                 $features = [
-                    ['icon'=>'🔐','label'=>'Inscription & connexion sécurisée'],
+                    ['icon'=>'🔐','label'=>'Inscription &amp; connexion sécurisée'],
                     ['icon'=>'🔍','label'=>'Recherche de films (API TMDB)'],
                     ['icon'=>'⭐','label'=>'Gestion des favoris'],
                     ['icon'=>'💬','label'=>'Avis avec note 1-5 étoiles'],
-                    ['icon'=>'👥','label'=>'Ajout & gestion des amis'],
+                    ['icon'=>'👥','label'=>'Ajout &amp; gestion des amis'],
                     ['icon'=>'📤','label'=>'Partage de films à ses amis'],
                     ['icon'=>'📥','label'=>'Films partagés reçus'],
                     ['icon'=>'👤','label'=>'Profil utilisateur modifiable'],
+                    ['icon'=>'✉️','label'=>'Invitations de nouveaux membres'],
                 ];
                 @endphp
                 @foreach($features as $f)
                     <div style="display:flex;align-items:center;gap:10px;font-size:14px">
-                        <span style="font-size:18px">{{ $f['icon'] }}</span>
-                        <span style="color:var(--muted)">{{ $f['label'] }}</span>
+                        <span style="font-size:18px">{!! $f['icon'] !!}</span>
+                        <span style="color:var(--muted)">{!! $f['label'] !!}</span>
                     </div>
                 @endforeach
             </div>
