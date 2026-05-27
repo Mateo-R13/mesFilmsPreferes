@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ami;
 use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -39,15 +40,25 @@ class RegisterController extends Controller
 
         $flash = ['show_curtain' => true];
 
-        // Détecter une invitation en attente sur cet email (insensible à la casse)
+        // Détecter une invitation en attente (insensible à la casse)
         $invitation = Invitation::whereRaw('LOWER(email) = ?', [Str::lower($user->email)])
             ->where('accepte', false)
             ->with('user')
             ->first();
 
         if ($invitation) {
+            // Marquer l'invitation comme acceptée
             $invitation->update(['accepte' => true]);
-            $flash['invited_by']      = $invitation->user->firstname . ' ' . $invitation->user->lastname;
+
+            $inviteur = $invitation->user;
+
+            // Créer l'amitié dans les deux sens (si elle n'existe pas déjà)
+            if ($inviteur && $inviteur->id !== $user->id) {
+                Ami::firstOrCreate(['user_id' => $inviteur->id, 'friend_id' => $user->id]);
+                Ami::firstOrCreate(['user_id' => $user->id,     'friend_id' => $inviteur->id]);
+            }
+
+            $flash['invited_by']      = $inviteur->firstname . ' ' . $inviteur->lastname;
             $flash['invited_message'] = $invitation->message ?? null;
         }
 
