@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
@@ -25,7 +27,6 @@ class RegisterController extends Controller
             'password'  => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
         ]);
 
-        // 🔒 Hash sécurisé via Hash::make (bcrypt avec cost factor)
         $user = User::create([
             'firstname' => strip_tags($request->firstname),
             'lastname'  => strip_tags($request->lastname),
@@ -36,7 +37,20 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('home'))
-            ->with('success', 'Compte créé avec succès ! Bienvenue ' . e($user->username) . ' 🎬');
+        $flash = ['show_curtain' => true];
+
+        // Détecter une invitation en attente sur cet email (insensible à la casse)
+        $invitation = Invitation::whereRaw('LOWER(email) = ?', [Str::lower($user->email)])
+            ->where('accepte', false)
+            ->with('user')
+            ->first();
+
+        if ($invitation) {
+            $invitation->update(['accepte' => true]);
+            $flash['invited_by']      = $invitation->user->firstname . ' ' . $invitation->user->lastname;
+            $flash['invited_message'] = $invitation->message ?? null;
+        }
+
+        return redirect(route('home'))->with($flash);
     }
 }

@@ -6,23 +6,37 @@
 @if(session('invited_by'))
 <div style="
     background: linear-gradient(135deg, rgba(229,9,20,.15), rgba(246,196,83,.10));
-    border: 1px solid rgba(246,196,83,.35);
+    border: 1px solid rgba(246,196,83,.40);
     border-radius: 18px;
-    padding: 20px 24px;
+    padding: 22px 26px;
     margin-bottom: 24px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 18px;
+    animation: fadeUp .5s ease both;
 ">
-    <div style="font-size: 40px; flex-shrink:0">🎞️</div>
-    <div>
-        <div style="font-size:18px; font-weight:800; margin-bottom:4px">
-            Bienvenue sur MesFilmsPréférés, {{ Auth::user()->firstname }} ! 🍿
+    <div style="font-size:42px;flex-shrink:0;line-height:1">🎞️</div>
+    <div style="flex:1">
+        <div style="font-size:18px;font-weight:800;margin-bottom:6px">
+            Bienvenue sur MesFilmsPréférés, {{ Auth::user()->firstname }} ! 🍿
         </div>
-        <div style="color:var(--muted); font-size:14px">
-            Vous avez été invité(e) par <strong style="color:var(--gold)">{{ session('invited_by') }}</strong>.
-            Explorez l'application et ajoutez vos premiers films favoris !
+        <div style="color:var(--muted);font-size:14px;margin-bottom:{{ session('invited_message') ? '10px' : '0' }}">
+            Vous avez été invité(e) par <strong style="color:var(--gold)">{{ session('invited_by') }}</strong>.
+            Explorez l’application et ajoutez vos premiers films favoris !
         </div>
+        @if(session('invited_message'))
+        <div style="
+            padding: 10px 14px;
+            background: rgba(246,196,83,.08);
+            border: 1px solid rgba(246,196,83,.22);
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            font-style: italic;
+        ">
+            “{{ session('invited_message') }}”
+        </div>
+        @endif
     </div>
 </div>
 @endif

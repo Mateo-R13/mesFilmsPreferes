@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -22,7 +23,7 @@ class LoginController extends Controller
             'password' => ['required', 'string', 'max:255'],
         ]);
 
-        // 🔒 Rate limiting : max 5 tentatives / minute par IP + email
+        // Rate limiting : max 5 tentatives / minute par IP + email
         $key = 'login.' . Str::lower($request->input('email')) . '|' . $request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 5)) {
@@ -37,11 +38,27 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::clear($key);
             $request->session()->regenerate();
-            return redirect()->intended(route('home'))
-                ->with('success', 'Connexion réussie ! Bienvenue ' . Auth::user()->username . ' 🎬');
+
+            $user  = Auth::user();
+            $flash = ['show_curtain' => true];
+
+            // Détecter une invitation en attente sur cet email
+            $invitation = Invitation::where('email', Str::lower($user->email))
+                ->orWhere('email', $user->email)
+                ->where('accepte', false)
+                ->with('user')
+                ->first();
+
+            if ($invitation) {
+                $invitation->update(['accepte' => true]);
+                $flash['invited_by']      = $invitation->user->firstname . ' ' . $invitation->user->lastname;
+                $flash['invited_message'] = $invitation->message ?? null;
+            }
+
+            return redirect()->intended(route('home'))->with($flash);
         }
 
-        RateLimiter::hit($key, 60); // bloque 60 secondes
+        RateLimiter::hit($key, 60);
 
         return back()->withErrors([
             'email' => 'Les informations de connexion sont incorrectes.',
