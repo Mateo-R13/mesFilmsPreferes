@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ami;
 use App\Models\Avis;
 use App\Models\Favori;
+use App\Models\Invitation;
 use App\Models\Partage;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class ProfilController extends Controller
             'note_moyenne' => $noteMoyenne ? round($noteMoyenne, 1) : null,
             'amis'         => Ami::where('user_id', $user->id)->count(),
             'partages'     => Partage::where('user_id', $user->id)->count(),
+            'invitations'  => Invitation::where('user_id', $user->id)->count(),
         ];
 
         $derniersFavoris = Favori::where('user_id', $user->id)->latest()->take(8)->get();

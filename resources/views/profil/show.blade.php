@@ -33,7 +33,7 @@
     </div>
 
     {{-- Statistiques --}}
-    <div style="display:grid;grid-template-columns:repeat({{ $stats['note_moyenne'] ? '5' : '4' }},1fr);gap:12px;margin-bottom:20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:20px">
         <a href="{{ route('favoris') }}" class="stat-card">
             <div class="stat-card__num" style="color:var(--gold)">{{ $stats['favoris'] }}</div>
             <div class="stat-card__label">Favoris</div>
@@ -60,6 +60,10 @@
         <a href="{{ route('partages') }}" class="stat-card">
             <div class="stat-card__num" style="color:#a78bfa">{{ $stats['partages'] }}</div>
             <div class="stat-card__label">Partages</div>
+        </a>
+        <a href="{{ route('amis') }}" class="stat-card">
+            <div class="stat-card__num" style="color:#f97316">{{ $stats['invitations'] }}</div>
+            <div class="stat-card__label">Invitations</div>
         </a>
     </div>
 
