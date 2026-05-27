@@ -10,6 +10,7 @@ use App\Http\Controllers\AmisController;
 use App\Http\Controllers\PartagesController;
 use App\Http\Controllers\FilmsController;
 use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\InvitationsController;
 
 // Routes publiques
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -59,6 +60,12 @@ Route::middleware('auth')->group(function () {
     Route::controller(PartagesController::class)->group(function () {
         Route::get('/partages', 'index')->name('partages');
         Route::post('/partages/ajouter', 'store')->name('partages.add');
+    });
+
+    // Invitations
+    Route::controller(InvitationsController::class)->group(function () {
+        Route::get('/invitations', 'index')->name('invitations');
+        Route::post('/invitations/envoyer', 'store')->name('invitations.store');
     });
 
     // Profil
